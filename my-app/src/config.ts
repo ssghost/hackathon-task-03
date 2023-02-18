@@ -19,7 +19,7 @@ export const TESTNET: typeof Network = {
 };
 
 const WALLET_CONNECT_PROJECT_ID = '76324905a70fe5c388bab46d3e0564dc';
-const WALLET_CONNECT_OPTS: SignClientTypes.Options = {
+const WALLET_CONNECT_OPTS: typeof SignClientTypes.Options = {
     projectId: WALLET_CONNECT_PROJECT_ID,
     metadata: {
         name: 'Piggybank',
