@@ -1,33 +1,29 @@
-
-
 import { err, ok } from 'neverthrow';
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { Hammer } from 'react-bootstrap-icons';
-import { resultFromTruthy } from './util';
+import { resultFromTruthy } from './Contract';
 
 interface Props {
-    canDeposit: boolean;
-    canSmash: boolean;
-    deposit: (amount: bigint) => void;
-    smash: () => void;
+    canRecv: boolean;
+    receive: (value: number) => void;
 }
 
-export default function Piggybank(props: Props) {
-    const { canDeposit, canSmash, deposit, smash } = props;
-    const [depositInput, setDepositInput] = useState('');
-    const [depositAmount, setDepositAmount] = useState<bigint>();
+export default function MyStorage(props: Props) {
+    const { canRecv, receive } = props;
+    const [inputValue, setInputValue] = useState('');
+    const [recvValue, setRecvValue] = useState<number>();
     const [validationError, setValidationError] = useState<string>();
 
     useEffect(() => {
-        const [amount, error] = resultFromTruthy(depositInput, undefined)
-            .andThen((input) => {
+        const [ivalue, error] = resultFromTruthy(inputValue, undefined)
+            .andThen((input: any) => {
                 const amount = Number(input);
-                return Number.isNaN(amount) ? err('invalid input') : ok(amount);
+                return Number.isNaN(ivalue)) ? err('invalid input') : ok(ivalue);
             })
             .match<[bigint?, string?]>(
-                (a) => [BigInt(Math.round(a * 1e6)), undefined],
-                (e) => [undefined, e]
+                (a: any) => [BigInt(Math.round(a * 1e6)), undefined],
+                (e: any) => [undefined, e]
             );
         setDepositAmount(amount);
         setValidationError(error);
