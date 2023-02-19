@@ -59,7 +59,7 @@ export function ContractSelector(props: Props) {
                 (c: any) => [c, undefined],
                 (e: any) => [undefined, e]
             )
-            .then(([c, e]: [any, any]) => {
+            .then(([c, e]: [(Info | undefined)?, (string | undefined)?]) => {
                 setContract(c);
                 setValidationError(e);
                 setIsLoading(false);

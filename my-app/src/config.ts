@@ -22,7 +22,7 @@ const WALLET_CONNECT_PROJECT_ID = '76324905a70fe5c388bab46d3e0564dc';
 const WALLET_CONNECT_OPTS: typeof SignClientTypes.Options = {
     projectId: WALLET_CONNECT_PROJECT_ID,
     metadata: {
-        name: 'Piggybank',
+        name: 'myStorage',
         description: 'Example dApp',
         url: '#',
         icons: ['https://walletconnect.com/walletconnect-logo.png'],
