@@ -38,7 +38,8 @@ export default function MyStorage(props: Props) {
     const handleSubmitStorage = useCallback(() => {
         console.log(`Attempting to update storage.`);
         if (recvValue) {
-            receive(should, recvValue);
+            let schema: Schema = {should: should, value: recvValue};
+            receive(schema);
             setShould(false);
             setInputValue('');
         }

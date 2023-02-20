@@ -35,7 +35,7 @@ export function useStorage(
 ) {
     const canRecv = Boolean(account) && account === contract?.owner.address;
     const receive = useCallback(
-        (amount: bigint, schema: Schema) =>
+        (schema: Schema) =>
             Result.combine([
                 resultFromTruthy(connection, 'no connection initialized'),
                 resultFromTruthy(account, 'no account connected'),
@@ -43,7 +43,7 @@ export function useStorage(
             ])
                 .asyncAndThen(([client, account, contract]: [any,any,any]) =>
                     ResultAsync.fromPromise(
-                        submitRecv(client, new CcdAmount(amount), schema, account, contract),
+                        submitRecv(client, new CcdAmount(0.1), schema, account, contract),
                         (e: any) => (e as Error).message
                     )
                 )
