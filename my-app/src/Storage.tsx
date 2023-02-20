@@ -3,9 +3,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Col, Form, InputGroup, Row } from 'react-bootstrap';
 import { resultFromTruthy } from './Contract';
 
+export type Schema = {
+    should:boolean,
+    value:number
+}
+
 interface Props {
     canRecv: boolean;
-    receive: (should: boolean, value: number) => void;
+    receive: ({should, value}: Schema) => void;
 }
 
 export default function MyStorage(props: Props) {

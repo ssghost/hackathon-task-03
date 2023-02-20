@@ -54,7 +54,7 @@ export function ContractSelector(props: Props) {
         setIsLoading(true);
         resultFromTruthy(input, undefined)
             .andThen(parseContractIndex)
-            .asyncAndThen((index: any) => ResultAsync.fromPromise(refresh(rpc, index), (e) => (e as Error).message))
+            .asyncAndThen((index: any) => ResultAsync.fromPromise(refresh(rpc, index), (e: any) => (e as Error).message))
             .match<[Info?, string?]>(
                 (c: any) => [c, undefined],
                 (e: any) => [undefined, e]
@@ -177,7 +177,7 @@ export function ContractManager(props: ModalProps) {
                                             Currently stored value in this contract is {value}.
                                         </Alert>
                                     ),
-                                    (e) => (
+                                    (e: any) => (
                                         <Alert variant="danger">{e}</Alert>
                                     )
                                 )}
