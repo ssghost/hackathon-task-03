@@ -139,7 +139,7 @@ export function ContractManager(props: ModalProps) {
                     <Modal.Title>Select contract</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <ContractSelector rpc={rpc} setContract={setCurrentContract}>
+                    <ContractSelector children rpc={rpc} setContract={setCurrentContract}>
                         {currentContract && (
                             <>
                                 <Alert variant="secondary">

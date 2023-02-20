@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-
 import { Alert, Button, Col, Container, Row, Spinner } from 'react-bootstrap';
 import { HttpProvider, JsonRpcClient } from '@concordium/web-sdk';
 import { Result, ResultAsync } from 'neverthrow';
-import { ArrowRepeat } from 'react-bootstrap-icons';
 import {
     BrowserWalletConnector,
     useConnect,
@@ -13,12 +11,32 @@ import {
 } from '@concordium/react-components';
 import { ContractManager, Info, refresh } from './Contract';
 import { BROWSER_WALLET, DEFAULT_CONTRACT_INDEX, TESTNET, WALLET_CONNECT } from './config';
-import WalletConnect2 from './WalletConnect2';
 import MyStorage from './Storage';
 import { resultFromTruthy } from './Contract';
-import BrowserWallet from './BrowserWallet';
-import { usePiggybank } from './usePiggybank';
-import { refreshPiggybankState, PiggybankState } from './state';
+import { useStorage } from './useStorage';
+import { refreshState, StorageState } from './state';
+
+
+interface Props {
+    account: string | undefined;
+}
+
+export function BrowserWallet({ account }: Props) {
+    if (!account) {
+        return null;
+    }
+    return (
+        <Alert variant="success">
+            <p>
+                Connected to account <code>{account}</code>.
+            </p>
+            <p>
+                The wallet currently only exposes the &quot;most recently selected&quot; connected account, even if more
+                than one is actually connected. Select and disconnect accounts through the wallet.
+            </p>
+        </Alert>
+    );
+}
 
 const rpc = new JsonRpcClient(new HttpProvider(TESTNET.jsonRpcUrl));
 
@@ -26,7 +44,7 @@ function refreshContract(index: bigint, setContract: React.Dispatch<Info | undef
     refresh(rpc, index).then(setContract).catch(console.error);
 }
 
-export default function App(props: WalletConnectionProps) {
+export default function App(props: typeof WalletConnectionProps) {
     const {
         activeConnectorType,
         setActiveConnectorType,
@@ -40,7 +58,6 @@ export default function App(props: WalletConnectionProps) {
 
     useEffect(() => {
         if (activeConnector) {
-            // When changing connector, select the first of any existing connections.
             const cs = activeConnector.getConnections();
             if (cs.length) {
                 setConnection(cs[0]);
@@ -51,18 +68,16 @@ export default function App(props: WalletConnectionProps) {
 
     const [contract, setContract] = useState<Info>();
 
-    // Piggybank state is duplicated in Contract component. State is redundantly refreshed after selecting a new contract.
-    const [piggybankState, setPiggybankState] = useState<Result<PiggybankState, string>>();
+    const [storageState, setStorageState] = useState<Result<StorageState, string>>();
     useEffect(() => {
         resultFromTruthy(contract, 'no contract selected')
-            .asyncAndThen((c) => ResultAsync.fromPromise(refreshPiggybankState(rpc, c), (e) => (e as Error).message))
-            .then(setPiggybankState);
+            .asyncAndThen((c: any) => ResultAsync.fromPromise(refreshState(rpc, c), (e: any) => (e as Error).message))
+            .then(setStorageState);
     }, [contract]);
 
-    // Select default contract.
     useEffect(() => refreshContract(DEFAULT_CONTRACT_INDEX, setContract), []);
 
-    const { canDeposit, canSmash, deposit, smash } = usePiggybank(connection, account, contract);
+    const { canRecv, receive } = useStorage(connection, account, contract);
     return (
         <Container>
             <Row>
@@ -86,17 +101,6 @@ export default function App(props: WalletConnectionProps) {
                         Use Browser Wallet
                     </Button>
                 </Col>
-                <Col>
-                    <Button
-                        className="w-100"
-                        variant={activeConnectorType === WALLET_CONNECT ? 'dark' : 'light'}
-                        onClick={() =>
-                            setActiveConnectorType(activeConnectorType === WALLET_CONNECT ? undefined : WALLET_CONNECT)
-                        }
-                    >
-                        Use WalletConnect v2
-                    </Button>
-                </Col>
             </Row>
             <Row>
                 <Col>
@@ -107,22 +111,20 @@ export default function App(props: WalletConnectionProps) {
                         <Button type="button" onClick={connect} disabled={isConnecting}>
                             {isConnecting && 'Connecting...'}
                             {!isConnecting && activeConnectorType === BROWSER_WALLET && 'Connect Browser Wallet'}
-                            {!isConnecting && activeConnectorType === WALLET_CONNECT && 'Connect Mobile Wallet'}
                         </Button>
                     )}
                     {activeConnector instanceof BrowserWalletConnector && <BrowserWallet account={account} />}
-                    {activeConnector instanceof WalletConnectConnector && <WalletConnect2 connection={connection} />}
                 </Col>
             </Row>
             <hr />
             <Row>
                 <Col>
-                    {!piggybankState && <Spinner animation="border" />}
-                    {piggybankState?.match(
-                        (state) => (
+                    {!storageState && <Spinner animation="border" />}
+                    {storageState?.match(
+                        (state: any) => (
                             <>
                                 <h2>
-                                    Piggybank instance <code>{state.contract.index.toString()}</code>
+                                    Storage instance <code>{state.contract.index.toString()}</code>
                                 </h2>
                                 <Alert variant="light" className="d-flex">
                                     <div className="me-auto p-2">
@@ -130,30 +132,26 @@ export default function App(props: WalletConnectionProps) {
                                         <code>
                                             {state.ownerAddress.slice(0, 4)}...{state.ownerAddress.slice(-4)}
                                         </code>
-                                        . As of {state.queryTime.toLocaleTimeString()} it contains{' '}
-                                        <strong>{state.amount}</strong> CCD and is{' '}
-                                        <em>{state.isSmashed ? 'smashed' : 'not smashed'}</em>
+                                        . As of {state.queryTime.toLocaleTimeString()} it stores a value of {' '}
+                                        <em>{Number(state.value)}</em> {' '} .
                                     </div>
                                     <Button
                                         variant="secondary"
                                         size="sm"
                                         className="p-2"
                                         onClick={() => refreshContract(state.contract.index, setContract)}
-                                    >
-                                        <ArrowRepeat />
+                                    >Refresh
                                     </Button>
                                 </Alert>
                                 <h6>Update</h6>
-                                <p>Everyone can make deposits to the Piggybank. Only the owner can smash it.</p>
-                                <Piggybank
-                                    canDeposit={canDeposit}
-                                    canSmash={canSmash}
-                                    deposit={deposit}
-                                    smash={smash}
+                                <p>Everyone can store an integer number into the contract.</p>
+                                <Storage
+                                    canRecv = {canRecv}
+                                    receive = {receive}
                                 />
                             </>
                         ),
-                        (e) => (
+                        (e: any) => (
                             <Alert variant="danger">{e}</Alert>
                         )
                     )}
