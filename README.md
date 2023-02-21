@@ -11,4 +11,4 @@ a new value to update into the storage, and a check-box to let you decide whethe
 "Update" to execute the update process.
 
 ## Usage
-`yarn run my-app/src/index.tsx`
+`cd my-app && npm start`
