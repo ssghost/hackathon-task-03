@@ -9,3 +9,6 @@ When you deployed the webapp and browsed the index page you can see the value st
 labelled as "Refresh" to refresh and retrieve the latest stored value as time passes by. Underneath is an input form to let you input 
 a new value to update into the storage, and a check-box to let you decide whether it should be stored or not, and a button with label 
 "Update" to execute the update process.
+
+## Usage
+`yarn run ./src/index.ts`
